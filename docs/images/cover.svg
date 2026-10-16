@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="350" viewBox="0 0 1200 350" role="img" aria-labelledby="title desc">
+  <title id="title">Interview Agent</title>
+  <desc id="desc">Practice with context. Review with evidence. A personal interview workspace.</desc>
+  <rect width="1200" height="350" rx="22" fill="#f2f6f1"/>
+  <rect x="1" y="1" width="1198" height="348" rx="21" fill="none" stroke="#dce6db"/>
+  <path d="M854 0v350M930 0v350M1006 0v350M1082 0v350M1158 0v350M816 51h384M816 127h384M816 203h384M816 279h384" stroke="#e3eae0"/>
+  <rect x="64" y="52" width="48" height="48" rx="14" fill="#24664f"/>
+  <path d="M77 67h22v16H85l-8 6V67zm5 5h12m-12 5h9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="130" y="81" font-family="Arial,sans-serif" font-size="14" letter-spacing="3" fill="#557264">PERSONAL INTERVIEW WORKSPACE</text>
+  <text x="62" y="176" font-family="Arial,sans-serif" font-size="68" font-weight="700" letter-spacing="-2" fill="#1b332b">Interview Agent</text>
+  <text x="65" y="222" font-family="Arial,sans-serif" font-size="23" fill="#567062">Practice with context. Review with evidence.</text>
+  <g font-family="Arial,sans-serif" font-size="13" fill="#24664f">
+    <rect x="64" y="269" width="106" height="31" rx="15" fill="#e0ebe1"/><text x="88" y="290">FastAPI</text>
+    <rect x="181" y="269" width="92" height="31" rx="15" fill="#e0ebe1"/><text x="207" y="290">Vue 3</text>
+    <rect x="284" y="269" width="94" height="31" rx="15" fill="#e0ebe1"/><text x="306" y="290">SQLite</text>
+    <rect x="389" y="269" width="97" height="31" rx="15" fill="#e0ebe1"/><text x="411" y="290">Ollama</text>
+    <rect x="497" y="269" width="164" height="31" rx="15" fill="#e0ebe1"/><text x="520" y="290">Docker Compose</text>
+  </g>
+  <g transform="translate(910 84)" font-family="Arial,sans-serif" font-size="16">
+    <rect width="202" height="58" rx="12" fill="#fff" stroke="#d4dfd2"/><circle cx="24" cy="29" r="5" fill="#729c7a"/><text x="41" y="35" fill="#315341">Your materials</text>
+    <path d="M101 61v22m-5-5 5 5 5-5" fill="none" stroke="#80a088" stroke-width="2"/>
+    <rect y="88" width="202" height="58" rx="12" fill="#fff" stroke="#d4dfd2"/><circle cx="24" cy="117" r="5" fill="#729c7a"/><text x="41" y="123" fill="#315341">Your answers</text>
+    <path d="M101 149v22m-5-5 5 5 5-5" fill="none" stroke="#80a088" stroke-width="2"/>
+    <rect y="176" width="202" height="58" rx="12" fill="#24664f"/><circle cx="24" cy="205" r="5" fill="#b7d9bb"/><text x="41" y="211" fill="#fff">Evidence &amp; next steps</text>
+  </g>
+</svg>
