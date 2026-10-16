@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "project_id": "my-project",
+      "name": "示例项目",
+      "competencies": ["系统架构", "工程实践"],
+      "files": [
+        {"path": "README.md", "claims": ["项目说明"]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+name: mianshiagent
+
+services:
+  ollama:
+    image: ollama/ollama:0.19.0
+    restart: unless-stopped
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 12
+
+  backend:
+    image: mianshiagent-backend:local
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      APP_DATA_DIR: /app/data/runtime
+      APP_DATABASE_PATH: /app/data/runtime/mianshiagent.sqlite3
+      APP_CORS_ORIGINS: http://127.0.0.1:${MIANSHI_PORT:-8080},http://localhost:${MIANSHI_PORT:-8080}
+      MEMORY_EMBEDDING_BASE_URL: http://ollama:11434
+      MEMORY_EMBEDDING_MODEL: ${MIANSHI_EMBEDDING_MODEL:-qwen3-embedding:0.6b}
+      MEMORY_EMBEDDING_DIMENSIONS: ${MIANSHI_EMBEDDING_DIMENSIONS:-1024}
+    volumes:
+      # Native dotenv parsing preserves the existing secret file's syntax.
+      - type: bind
+        source: ./backend/.env
+        target: /app/backend/.env
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./data
+        target: /app/data
+        read_only: true
+      - type: bind
+        source: ./data/runtime
+        target: /app/data/runtime
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    stop_grace_period: 30s
+
+  frontend:
+    image: mianshiagent-frontend:local
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MIANSHI_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+        restart: true
+
+volumes:
+  ollama-models:
