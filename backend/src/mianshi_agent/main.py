@@ -25,6 +25,8 @@ from mianshi_agent.config import Settings, get_settings
 from mianshi_agent.db import Database
 from mianshi_agent.documents import DocumentExtractionError, extract_document_text
 from mianshi_agent.embeddings import OllamaEmbeddingClient
+from mianshi_agent.external_review_api import external_review_router
+from mianshi_agent.external_reviews import ExternalReviewService
 from mianshi_agent.folder_import import FolderImportCreate, FolderImportService, FolderScanCreate
 from mianshi_agent.interview import InterviewService
 from mianshi_agent.memory_answers import MemoryAnswerService
@@ -55,7 +57,9 @@ from mianshi_agent.service import ProfileService
 from mianshi_agent.study import StudyService
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None, *, chat_client: ChatCompletionClient | None = None
+) -> FastAPI:
     """Build an app that can use isolated settings during tests."""
     resolved_settings = settings or get_settings()
     database = Database(resolved_settings.app_database_path)
@@ -66,7 +70,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         timeout=resolved_settings.embedding_timeout,
     )
     retrieval_service = RetrievalService(database, resolved_settings, embeddings)
-    chat = ChatCompletionClient(
+    chat = chat_client or ChatCompletionClient(
         base_url=resolved_settings.llm_base_url,
         api_key=resolved_settings.llm_api_key,
         model=resolved_settings.llm_model_id,
@@ -75,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     memory_writer = MemoryWriteService(database, chat)
     profile_service = ProfileService(database, resolved_settings, embeddings, memory_writer)
     memory_answers = MemoryAnswerService(database, retrieval_service, chat, memory_writer)
+    external_reviews = ExternalReviewService(database, retrieval_service, chat)
     interview_service = InterviewService(
         database,
         retrieval_service,
@@ -90,13 +95,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await database.initialize()
         await database.recover_interrupted_sessions()
         await database.recover_memory_answers()
+        await external_reviews.store.initialize()
         worker = asyncio.create_task(memory_answers.run())
+        external_worker = asyncio.create_task(external_reviews.run())
         try:
             yield
         finally:
             worker.cancel()
+            external_worker.cancel()
             with suppress(asyncio.CancelledError):
                 await worker
+            with suppress(asyncio.CancelledError):
+                await external_worker
 
     app = FastAPI(
         title="MianshiAgent API",
@@ -108,7 +118,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_origins=resolved_settings.cors_origins,
         allow_credentials=False,
         allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["Content-Type", "If-None-Match"],
+        allow_headers=["Content-Type", "If-None-Match", "X-Interview-Demo"],
     )
 
     async def profile_exists(profile_id: str) -> str:
@@ -118,9 +128,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="profile_not_found") from exc
         return profile_id
 
+    app.include_router(external_review_router(external_reviews, profile_exists))
+    app.state.external_review_service = external_reviews
+
     @app.get("/health")
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/api/runtime")
+    async def runtime() -> dict[str, str]:
+        return {"mode": "local"}
 
     @app.post("/api/profiles", response_model=ProfileResponse)
     async def create_profile(request: ProfileCreate) -> ProfileResponse:
@@ -416,4 +433,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     return app
 
 
-app = create_app()
+def __getattr__(name: str):
+    # uvicorn main:app remains compatible; importing the factory for the public
+    # gateway must not instantiate the personal app or read its dotenv file.
+    if name == "app":
+        application = create_app()
+        globals()[name] = application
+        return application
+    raise AttributeError(name)

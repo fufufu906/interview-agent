@@ -1,5 +1,6 @@
 import { computed, reactive } from "vue";
 import { errorMessage, post, request } from "./api";
+import { publicDemo } from "./runtime";
 import { importFolderBatch, type FolderImportProgress } from "./folderImport";
 import type {
   Page,
@@ -32,7 +33,7 @@ export function createWorkspace() {
     notification: "",
     answer: "",
     focus: "",
-    maxPrompts: 8,
+    maxPrompts: publicDemo.value ? 3 : 8,
     mode: "quick" as "quick" | "deep",
     studyTopic: "",
     drawer: "" as
@@ -167,7 +168,7 @@ export function createWorkspace() {
     s.sourceQuery = "";
     s.sourceKind = "";
     s.mode = "quick";
-    s.maxPrompts = 8;
+    s.maxPrompts = publicDemo.value ? 3 : 8;
     s.profileId = id;
     s.drawer = "";
     selectPage("home");

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted } from "vue";
 import { createWorkspace } from "./workspace";
+import { publicDemo } from "./runtime";
 import { locatorLabel } from "./types";
 import type { Page } from "./types";
 import Icon from "./components/Icon.vue";
@@ -18,7 +19,7 @@ const pages: { id: Page; name: string; icon: string }[] = [
   { id: "interview", name: "模拟面试", icon: "chat" },
   { id: "deep", name: "深度复习", icon: "book" },
   { id: "library", name: "资料与档案", icon: "folder" },
-  { id: "review", name: "复习记录", icon: "book" },
+  { id: "review", name: "面试复盘", icon: "book" },
 ];
 const drawerTitles = {
   setup: "配置练习",
@@ -128,10 +129,15 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
                 {{ p.display_name }}
               </option>
             </select>
-            <div class="profile-type"><i class="local" />本地个人工作区</div>
+            <div class="profile-type">
+              <i class="local" />{{
+                publicDemo ? "独立访客体验" : "本地个人工作区"
+              }}
+            </div>
           </div>
         </div>
         <button
+          v-if="!publicDemo"
           class="new-profile"
           :disabled="!!s.busy || !!s.answer.trim()"
           aria-label="添加个人档案"
@@ -148,7 +154,13 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
         </div>
         <span class="connection"
           ><i class="local" />{{
-            s.loading ? "正在连接" : s.profiles.length ? "本地档案" : "等待建档"
+            s.loading
+              ? "正在连接"
+              : s.profiles.length
+                ? publicDemo
+                  ? "访客档案"
+                  : "本地档案"
+                : "等待建档"
           }}</span
         >
       </header>

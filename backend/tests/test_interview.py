@@ -67,7 +67,7 @@ async def interview_service(tmp_path: Path) -> tuple[Database, InterviewService]
     embeddings = OfflineEmbeddings()
     profiles = ProfileService(database, settings, embeddings)
     retrieval = RetrievalService(database, settings, embeddings)
-    await database.create_profile("self", "测试候选人")
+    await database.create_profile("self", "演示候选人")
     await profiles.ingest_text(
         "self",
         TextSourceCreate(

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import { publicDemo } from "../runtime";
 import FolderIntake from "./FolderIntake.vue";
 import type { Workspace } from "../workspace";
 import type { SourceKind } from "../types";
@@ -45,8 +46,10 @@ async function saveUpload() {
       localError.value = "请先选择文件。";
       return;
     }
-    if (file.value.size > 15 * 1024 * 1024) {
-      localError.value = "文件超过 15 MB。";
+    if (file.value.size > (publicDemo.value ? 1_500_000 : 15 * 1024 * 1024)) {
+      localError.value = publicDemo.value
+        ? "演示版文件最大 1.5 MB。"
+        : "文件超过 15 MB。";
       return;
     }
     const body = new FormData();
@@ -117,8 +120,8 @@ async function saveGap() {
         ><select id="setup-rounds" v-model.number="w.s.maxPrompts">
           <option :value="3">3 道</option>
           <option :value="5">5 道</option>
-          <option :value="8">8 道</option>
-          <option :value="10">10 道</option></select
+          <option v-if="!publicDemo" :value="8">8 道</option>
+          <option v-if="!publicDemo" :value="10">10 道</option></select
         ><label>反馈时机</label>
         <div class="notice">严格模拟 · 结束后统一复盘</div></template
       ><button
@@ -187,6 +190,7 @@ async function saveGap() {
         >
           粘贴正文</button
         ><button
+          v-if="!publicDemo"
           type="button"
           :aria-pressed="upload.tab === 'folder'"
           @click="upload.tab = 'folder'"
@@ -211,7 +215,8 @@ async function saveGap() {
           maxlength="300"
           placeholder="留空时使用文件名" /></template
       ><template v-if="upload.tab === 'file'"
-        ><label for="upload-file">文件 · 最大 15 MB</label
+        ><label for="upload-file"
+          >文件 · 最大 {{ publicDemo ? "1.5" : "15" }} MB</label
         ><input
           id="upload-file"
           type="file"

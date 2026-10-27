@@ -1,5 +1,6 @@
 **
 !Dockerfile
+!Dockerfile.demo
 !pyproject.toml
 !uv.lock
 !src/

@@ -1,0 +1,44 @@
+# Independent deployment; never mount private data/ or backend/.env here.
+name: interview-agent-demo
+services:
+  ollama:
+    image: ollama/ollama:0.19.0
+    restart: unless-stopped
+    volumes:
+      - demo-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  backend:
+    image: interview-agent-demo-backend:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.demo
+    restart: unless-stopped
+    environment:
+      DEMO_PUBLIC_ORIGIN: ${DEMO_PUBLIC_ORIGIN:-http://127.0.0.1:8082}
+      DEMO_ALLOW_HTTP_LOCAL: ${DEMO_ALLOW_HTTP_LOCAL:-true}
+      DEMO_DATA_DIR: /app/data/public-demo
+      DEMO_EMBEDDING_BASE_URL: http://ollama:11434
+      DEMO_MAX_ACTIVE: 4
+    volumes:
+      - demo-records:/app/data/public-demo
+    depends_on:
+      ollama:
+        condition: service_healthy
+  frontend:
+    image: interview-agent-demo-frontend:local
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_UPSTREAM: backend:8000
+    ports:
+      - "127.0.0.1:${DEMO_PORT:-8082}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+volumes:
+  demo-records:
+  demo-models:

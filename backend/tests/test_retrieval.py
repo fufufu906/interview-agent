@@ -36,7 +36,7 @@ async def services(tmp_path: Path):
 
 async def test_lexical_retrieval_degrades_cleanly_without_embeddings(services) -> None:
     database, profiles, retrieval = services
-    await database.create_profile("self", "测试候选人")
+    await database.create_profile("self", "演示候选人")
     result = await profiles.ingest_text(
         "self",
         TextSourceCreate(
@@ -92,7 +92,7 @@ async def test_same_source_deduplicates_inside_profile_only(services) -> None:
 
 async def test_ingestion_builds_adjacent_chunk_graph(services) -> None:
     database, profiles, _ = services
-    await database.create_profile("self", "测试候选人")
+    await database.create_profile("self", "演示候选人")
     await profiles.ingest_text(
         "self",
         TextSourceCreate(
@@ -117,7 +117,7 @@ async def test_ingestion_builds_adjacent_chunk_graph(services) -> None:
 
 async def test_reindex_reports_unavailable_provider(services) -> None:
     database, profiles, _ = services
-    await database.create_profile("self", "测试候选人")
+    await database.create_profile("self", "演示候选人")
     await profiles.ingest_text(
         "self",
         TextSourceCreate(kind="study_note", title="RAG", text="混合检索"),
@@ -131,7 +131,7 @@ async def test_reindex_reports_unavailable_provider(services) -> None:
 
 async def test_changed_repository_file_deactivates_previous_version(services) -> None:
     database, profiles, retrieval = services
-    await database.create_profile("self", "测试候选人")
+    await database.create_profile("self", "演示候选人")
     common = {
         "kind": "project_repository",
         "title": "项目文件",
