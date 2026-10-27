@@ -189,7 +189,8 @@ async def test_background_suggestions_keep_each_visitors_key(demo, monkeypatch):
     calls = []
 
     async def fake(self, *, max_tokens, **kwargs):
-        calls.append((self.api_key, max_tokens))
+        stage = "suggestion" if "面试记忆回答助手" in kwargs.get("system_prompt", "") else "request"
+        calls.append((self.api_key, stage))
         if max_tokens == 600:
             return {"kind": "question", "question": "如何处理资料缺口？", "competency": "证据边界"}
         if "面试记忆回答助手" in kwargs.get("system_prompt", ""):
@@ -222,10 +223,10 @@ async def test_background_suggestions_keep_each_visitors_key(demo, monkeypatch):
             )
             assert result.status_code == 200, result.text
         for _ in range(100):
-            if {key for key, tokens in calls if tokens == 1800} == {KEY_A, KEY_B}:
+            if {key for key, stage in calls if stage == "suggestion"} == {KEY_A, KEY_B}:
                 break
             await asyncio.sleep(0.05)
-        assert {key for key, tokens in calls if tokens == 1800} == {KEY_A, KEY_B}
+        assert {key for key, stage in calls if stage == "suggestion"} == {KEY_A, KEY_B}
         assert all(key in (KEY_A, KEY_B) for key, _ in calls)
 
 
@@ -234,6 +235,8 @@ def test_public_origin_requires_https_unless_explicit_local_preview():
         DemoSettings(public_origin="http://public.example")
     with pytest.raises(ValueError):
         DemoSettings(public_origin="https://demo.example/some/path")
+    with pytest.raises(ValueError):
+        DemoSettings(public_origin="https://demo.example", allow_http_local=True)
     assert DemoSettings(public_origin="http://127.0.0.1:5180", allow_http_local=True)
 
 

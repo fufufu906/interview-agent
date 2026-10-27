@@ -57,7 +57,8 @@ class DemoSettings(BaseSettings):
         u = urlsplit(self.public_origin)
         local = self.allow_http_local and u.hostname in ("localhost", "127.0.0.1")
         if (
-            (u.scheme != "https" and not (local and u.scheme == "http"))
+            (self.allow_http_local and not local)
+            or (u.scheme != "https" and not (local and u.scheme == "http"))
             or not u.netloc
             or u.username
             or u.password
